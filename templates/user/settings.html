@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .input-pair {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        input {
+            width: 48%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 0.8rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .flash-messages {
+            color: red;
+            margin-bottom: 1rem;
+        }
+        .return-btn {
+            background-color: #0a0302;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+            margin-top: -10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="return-btn" onclick="redirectUrl('tracker_ui')">Return</button>
+
+        <h2>Settings</h2>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Form to change username -->
+        <form action="{{ url_for('authorization_bp.settings')}}" method="POST">
+            <div class="input-pair">
+                <input type="text" name="old_username" placeholder="Old Username" required>
+                <input type="text" name="new_username" placeholder="New Username" required>
+            </div>
+            <button type="submit" name="btn" value="change_username">Change Username</button>
+        </form>
+
+        <!-- Form to change email -->                 
+        <form action="{{ url_for('authorization_bp.settings')}}" method="POST">
+            <div class="input-pair">
+                <input type="email" name="old_email" placeholder="Old Email" required>
+                <input type="email" name="new_email" placeholder="New Email" required>
+            </div>
+            <button type="submit" name="btn" value="change_email">Change Email</button>
+        </form>
+
+        <!-- Form to change password -->
+        <form action="{{ url_for('authorization_bp.settings')}}" method="POST">
+            <div class="input-pair">
+                <input type="password" name="old_password" placeholder="Old Password" required>
+                <input type="password" name="new_password" placeholder="New Password" required>
+            </div>
+            <button type="submit" name="btn" value="change_password">Change Password</button>
+        </form>
+    </div>
+    <script>
+        function redirectUrl(endpoint){
+                window.location.href = "{{ url_for('tracker_bp.tracker_ui') }}".replace('register', endpoint);
+            }
+    </script>
+</body>
+</html>

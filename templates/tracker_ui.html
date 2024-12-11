@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trackers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #f0f2f5;
+        }
+        .title {
+            margin-right: px;
+        }
+        .images {
+            width: 75%;
+            height: 75%;
+        }
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            padding: 2rem;
+            margin: 2rem auto;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .status_box {
+            position: absolute;
+            left: 67%; /* Position 50% from the left */
+            padding: 10px;
+            text-align: center;
+            height: 30px;
+            border: 1px solid #ccc;
+            color: white;
+            border-radius: 5px;
+            resize: none;
+            margin-top: 50px; 
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .tracker-list, .add-tracker {
+            margin: 1rem 0;
+        }
+        .tracker-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .tracker-item:last-child {
+            border-bottom: none;
+        }
+        .tracker-details {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+        }
+        .buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 15px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .update-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .add-tracker input, .add-tracker select {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .general_dropdown {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .add-btn {
+            background-color: #008CBA;
+            color: white;
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1rem;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+            margin-top: -10px;
+        }
+        .settings-btn {
+            background-color: #363636;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: left;
+            margin-top: -10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <form action="{{ url_for('authorization_bp.logout') }}">
+        <button class="logout-btn" type = "submit">Logout</button>
+    </form>
+    <form action = "{{ url_for('authorization_bp.start_setting') }}">
+        <button class="settings-btn" type = "submit">Settings</button>
+    </form>
+
+    <h1>My Trackers</h1>
+
+    <!-- Flash messages for feedback -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+     <!-- Planned Trackers -->
+     <h2>Planned</h2>
+     <div class="tracker-list">
+         {% for tracker in planned_trackers %}
+         <div class="tracker-item">
+            <div>
+                <label>
+                    <img src="{{ tracker.show.backdrop }}" alt="Backdrop Image for {{ tracker.show.name }}" class = "images">
+                </label>
+            </div>
+            <div class="tracker-details">
+
+                <label class = "title"><strong>{{ tracker.show.name }}</strong></label>
+                <form action="{{ url_for('tracker_bp.update_tracker', tracker_id=tracker.tracker_id) }}" method="POST">
+                    <label for="status_{{ tracker.tracker_id }}">Status:
+                        <select class = "general_dropdown" name="status_{{ tracker.tracker_id }}" required>
+                            <option value="Completed" disabled selected>Select Status</option>
+                            <option value="Planned" {% if tracker.status == "Planned" %} selected {% endif %}>Planned</option>
+                            <option value="In-progress" {% if tracker.status == "In-progress" %} selected {% endif %}>In-progress</option>
+                            <option value="Completed" {% if tracker.status == "Completed" %} selected {% endif %}>Completed</option>
+                        </select>
+                    </label>
+                    <label for="progress_{{ tracker.tracker_id }}">Progress:
+                        <select class = "general_dropdown" name="progress_{{ tracker.tracker_id }}" required>
+                            <option value="" disabled selected>Episode</option>
+                            {% for i in range(0, tracker.show.episodes + 1) %}
+                            <option name="{{ i }}" {% if tracker.progress == i %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %} 
+                        </select>/{{ tracker.show.episodes }} Episodes
+                    </label>
+            </div>
+            <div class="buttons">
+                    <button type = "submit" class="update-btn">Update</button>
+                    <button type = "button" onclick = "removeTracker({{ tracker.tracker_id }})" class ="remove-btn">Remove</button>
+                </form>
+             </div>
+            <form>
+                <textarea id="returning_{{ tracker.show.name }}" class="status_box" placeholder="The status of {{ tracker.show.name }}: {{ tracker.show.returnEnded }}"></textarea>
+            </form>
+         </div>
+         <!--Look at this when you return, add the status of show-->
+         {% else %}
+         <p>No trackers in Planned status.</p>
+         {% endfor %}
+     </div>
+ 
+     <!-- In-progress Trackers -->
+     <h2>In-progress</h2>
+     <div class="tracker-list">
+         {% for tracker in in_progress_trackers %}
+         <div class="tracker-item">
+            <div>
+                <label>
+                    <img src="{{ tracker.show.backdrop }}" alt="Backdrop Image for {{ tracker.show.name }}" class = "images">
+                </label>
+            </div>
+            <div class="tracker-details">
+                
+                <label class = "title"><strong>{{ tracker.show.name }}</strong></label>
+                <form action="{{ url_for('tracker_bp.update_tracker', tracker_id=tracker.tracker_id) }}" method="POST">
+                    <label for="status_{{ tracker.tracker_id }}">Status:
+                        <select class = "general_dropdown" name="status_{{ tracker.tracker_id }}" required>
+                            <option value="Completed" disabled selected>Select Status</option>
+                            <option value="Planned" {% if tracker.status == "Planned" %} selected {% endif %}>Planned</option>
+                            <option value="In-progress" {% if tracker.status == "In-progress" %} selected {% endif %}>In-progress</option>
+                            <option value="Completed" {% if tracker.status == "Completed" %} selected {% endif %}>Completed</option>
+                        </select>
+                    </label>
+                    <label for="progress_{{ tracker.tracker_id }}">Progress:
+                        <select class = "general_dropdown" name="progress_{{ tracker.tracker_id }}" required>
+                            <option value="" disabled selected>Episode</option>
+                            {% for i in range(0, tracker.show.episodes + 1) %}
+                            <option name="{{ i }}" {% if tracker.progress == i %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %} 
+                        </select>/{{ tracker.show.episodes }} Episodes
+                    </label>
+            </div>
+            <div class="buttons">
+                    <button type = "submit" class="update-btn">Update</button>
+                    <button type = "button" onclick = "removeTracker({{ tracker.tracker_id }})" class ="remove-btn">Remove</button>
+                </form>
+            </div>
+            <form>
+                <textarea id="returning_{{ tracker.show.name }}" class="status_box" placeholder="The status of {{ tracker.show.name }}: {{ tracker.show.returnEnded }}"></textarea>
+            </form>
+         </div>
+         {% else %}
+         <p>No trackers in In-progress status.</p>
+         {% endfor %}
+     </div>
+    
+     <!-- Completed Trackers -->
+     <h2>Completed</h2>
+     <div class="tracker-list">
+         {% for tracker in completed_trackers %}
+         <div class="tracker-item">
+            <div>
+                <label>
+                    <img src="{{ tracker.show.backdrop }}" alt="Backdrop Image for {{ tracker.show.name }}" class = "images">
+                </label>
+            </div>
+            <div class="tracker-details">
+            
+                <label class = "title"><strong>{{ tracker.show.name }}</strong></label>
+                <form action="{{ url_for('tracker_bp.update_tracker', tracker_id=tracker.tracker_id) }}" method="POST">
+                    <label for="status_{{ tracker.tracker_id }}">Status:
+                        <select class = "general_dropdown" name="status_{{ tracker.tracker_id }}" required>
+                            <option value="Completed" disabled selected>Select Status</option>
+                            <option value="Planned" {% if tracker.status == "Planned" %} selected {% endif %}>Planned</option>
+                            <option value="In-progress" {% if tracker.status == "In-progress" %} selected {% endif %}>In-progress</option>
+                            <option value="Completed" {% if tracker.status == "Completed" %} selected {% endif %}>Completed</option>
+                        </select>
+                    </label>
+                    <label for="progress_{{ tracker.tracker_id }}">Progress:
+                        <select class = "general_dropdown" name="progress_{{ tracker.tracker_id }}" required>
+                            <option value="" disabled selected>Episode</option>
+                            {% for i in range(0, tracker.show.episodes + 1) %}
+                            <option name="{{ i }}" {% if tracker.progress == i %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %} 
+                        </select>/{{ tracker.show.episodes }} Episodes
+                    </label>
+            </div>
+            <div class="buttons">
+                    <button type = "submit" class="update-btn">Update</button>
+                    <button type = "button" onclick = "removeTracker({{ tracker.tracker_id }})" class ="remove-btn">Remove</button>
+            </form>
+            </div>
+            <form>
+                <textarea id="returning_{{ tracker.show.name }}" class="status_box" placeholder="The status of {{ tracker.show.name }}: {{ tracker.show.returnEnded }}"></textarea>
+            </form>
+         </div>
+         {% else %}
+         <p>No trackers in Completed status.</p>
+         {% endfor %}
+     </div>
+
+    <!-- Add New Tracker Form -->
+    <div class="add-tracker">
+        <h3>Add New Tracker</h3>
+        <form action="{{ url_for('tracker_bp.add_tracker') }}" method="POST">
+            <input type="text" id = "show_input" name="Show" placeholder="Search by title or genre" onkeyup = "suggestions()" list = "show_matches" required>
+            <datalist id = "show_matches"></datalist>
+
+            <select name="Status" required>
+                <option value="" disabled selected>Select Status</option>
+                <option value="Planned">Planned</option>
+                <option value="In-progress">In-progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+            <button type="submit" class="add-btn">Add to Tracker</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function suggestions() {
+        const show = document.getElementById('show_input').value;
+        const suggestionBox = document.getElementById('show_matches');
+
+        if (show.length < 2) {
+            suggestionBox.innerHTML = '';
+            return;
+        }
+        
+        const params = new URLSearchParams();
+        params.append('q', show);
+        
+        fetch(`/autocomplete_shows?${params.toString()}`)
+            .then(response => response.json())
+            .then(shows => {
+                suggestionBox.innerHTML = '';
+                if (Array.isArray(shows) && shows.length > 0) {
+                    shows.forEach(show => {
+                        const option = document.createElement('option');
+                        option.value = show;
+                        suggestionBox.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value("No matches found");
+                    suggestionBox.appendChild(option);
+                }
+            })
+            .catch(error =>{
+                console.error('Error grabbing show suggestions', error);
+            });
+        return;
+    }
+
+    function removeTracker(trackerId) {
+        if (confirm("Are you sure you want to remove this tracker?")) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `{{ url_for('tracker_bp.remove_tracker', tracker_id=0) }}`.replace('0', trackerId);
+            
+            // Append the form to the body and submit
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+    function redirectUrl(endpoint){
+        window.location.href = `{{ url_for('authorization_bp.register') }}`.replace('register', endpoint);
+    }
+</script>
+
+</body>
+</html>

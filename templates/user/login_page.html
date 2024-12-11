@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f0f2f5;
+            }
+            .container {
+                background-color: #fff;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                text-align: center;
+                width: 300px;
+            }
+            h2 {
+                margin-bottom: 1rem;
+                color: #333;
+            }
+            .flash-messages {
+                color: red;
+                margin-bottom: 1rem;
+            }
+            input[type="text"],
+            input[type="password"] {
+                width: 100%;
+                padding: 0.8rem;
+                margin: 0.5rem 0;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+            .show-password {
+                margin-top: 0.5rem;
+                font-size: 0.9rem;
+            }
+            .buttons {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 1rem;
+            }
+            button {
+                width: 48%;
+                padding: 0.8rem;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .login-btn {
+                background-color: #4CAF50;
+                color: white;
+            }
+            .register-btn {
+                background-color: #008CBA;
+                color: white;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class = "container">
+            <h1>Login Screen</h1>
+            <!-- Flash messages for feedback -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+
+            <form action = "{{url_for('authorization_bp.login')}}" method = "POST">
+                <input type = "text" name = "Username" placeholder = "Enter Username" required>
+                <input type = "password" name = "Password" id = "pass" placeholder = "Enter Password" required>
+
+                <label>
+                    <input type = "checkbox" id = "checkbox" onclick = "checkCheckbox()">Show Password
+                </label>
+
+                <div class="login_buttons">
+                    <button type="submit" class="login-btn">Login</button>
+                    
+                    <button type="button" class="register-btn" onclick="redirectUrl('register')">Register New User</button>
+                </div>
+            </form>
+        </div>
+        
+        <script>
+            function checkCheckbox() {
+                const checkbox = document.getElementById('checkbox');
+                togglePasswordVisibility(checkbox.checked)
+            }
+            function togglePasswordVisibility(yesno) {
+                const passwordField = document.getElementById('pass');
+                passwordField.type = yesno ? "text" : "password"
+            }
+
+            function redirectUrl(endpoint){
+                window.location.href = "{{ url_for('authorization_bp.register') }}".replace('register', endpoint);
+            }
+        </script>
+    </body>
+</html>
