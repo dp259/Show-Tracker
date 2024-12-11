@@ -1,1 +1,3 @@
 progressTracker/
+.venv/
+.idea/
